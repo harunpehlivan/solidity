@@ -46,12 +46,21 @@ class Trace:
             self._output = output[:len(output) - length - 4]
 
     def __str__(self):
-        # we ignore the used gas
-        result = str(
-            "kind='" + self.kind + "' parameter='" + self.parameter + "' input='" + self._input +
-            "' output='" + self._output + "' value='" + self.value + "' result='" + self.result + "'"
+        return str(
+            "kind='"
+            + self.kind
+            + "' parameter='"
+            + self.parameter
+            + "' input='"
+            + self._input
+            + "' output='"
+            + self._output
+            + "' value='"
+            + self.value
+            + "' result='"
+            + self.result
+            + "'"
         )
-        return result
 
 
 class TestCase:
@@ -77,14 +86,16 @@ class TraceAnalyser:
             trace = None
             test_case = None
             for line in trace_file.readlines():
-                test = re.search(r'Entering test case "(.*)"', line, re.M | re.I)
-                if test:
+                if test := re.search(
+                    r'Entering test case "(.*)"', line, re.M | re.I
+                ):
                     test_name = test.group(1)
                     test_case = TestCase(test_name)
                     self.tests[test_name] = test_case
 
-                metadata = re.search(r'\s*metadata:\s*(.*)$', line, re.M | re.I)
-                if metadata:
+                if metadata := re.search(
+                    r'\s*metadata:\s*(.*)$', line, re.M | re.I
+                ):
                     test_case.metadata = json.loads(metadata.group(1))
                     del test_case.metadata["sources"]
                     del test_case.metadata["compiler"]["version"]
@@ -102,26 +113,29 @@ class TraceAnalyser:
 
             trace_file.close()
 
-            print(self.file + ":", len(self.tests), "test-cases.")
+            print(f'{self.file}:', len(self.tests), "test-cases.")
 
             self.ready = True
 
     @staticmethod
     def parse_parameters(line, trace):
-        input_match = re.search(r'\s*in:\s*([a-fA-F0-9]*)', line, re.M | re.I)
-        if input_match:
+        if input_match := re.search(r'\s*in:\s*([a-fA-F0-9]*)', line, re.M | re.I):
             trace.input = input_match.group(1)
-        output_match = re.search(r'\s*out:\s*([a-fA-F0-9]*)', line, re.M | re.I)
-        if output_match:
+        if output_match := re.search(
+            r'\s*out:\s*([a-fA-F0-9]*)', line, re.M | re.I
+        ):
             trace.output = output_match.group(1)
-        result_match = re.search(r'\s*result:\s*([a-fA-F0-9]*)', line, re.M | re.I)
-        if result_match:
+        if result_match := re.search(
+            r'\s*result:\s*([a-fA-F0-9]*)', line, re.M | re.I
+        ):
             trace.result = result_match.group(1)
-        gas_used_match = re.search(r'\s*gas\sused:\s*([a-fA-F0-9]*)', line, re.M | re.I)
-        if gas_used_match:
+        if gas_used_match := re.search(
+            r'\s*gas\sused:\s*([a-fA-F0-9]*)', line, re.M | re.I
+        ):
             trace.gas = gas_used_match.group(1)
-        value_match = re.search(r'\s*value:\s*([a-fA-F0-9]*)', line, re.M | re.I)
-        if value_match:
+        if value_match := re.search(
+            r'\s*value:\s*([a-fA-F0-9]*)', line, re.M | re.I
+        ):
             trace.value = value_match.group(1)
 
     def diff(self, analyser):
@@ -159,15 +173,12 @@ class TraceAnalyser:
             right_trace = right.traces[trace_id]
             assert left_trace.kind == right_trace.kind
             if str(left_trace) != str(right_trace):
-                mismatch_info = "    " + str(left_trace) + "\n"
-                mismatch_info += "    " + str(right_trace) + "\n"
+                mismatch_info = f'    {str(left_trace)}' + "\n"
+                mismatch_info += f'    {str(right_trace)}' + "\n"
                 mismatch_info += "    "
-                for ch in range(0, len(str(left_trace))):
+                for ch in range(len(str(left_trace))):
                     if ch < len(str(left_trace)) and ch < len(str(right_trace)):
-                        if str(left_trace)[ch] != str(right_trace)[ch]:
-                            mismatch_info += "|"
-                        else:
-                            mismatch_info += " "
+                        mismatch_info += "|" if str(left_trace)[ch] != str(right_trace)[ch] else " "
                     else:
                         mismatch_info += "|"
                 mismatch_info += "\n"
@@ -191,7 +202,7 @@ def main(argv):
 
     base_path = os.path.dirname(__file__)
     if not extracted_tests_trace_file:
-        extracted_tests_trace_file = base_path + "/extracted-tests.trace"
+        extracted_tests_trace_file = f'{base_path}/extracted-tests.trace'
     if not end_to_end_trace_file:
         end_to_end_trace_file = base_path + "/endToEndExtraction-tests.trace"
 
