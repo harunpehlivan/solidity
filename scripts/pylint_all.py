@@ -29,9 +29,11 @@ def pylint_all_filenames(dev_mode, rootdirs):
     filenames = []
     for rootdir in rootdirs:
         for rootpath, _, filenames_w in walk(rootdir):
-            for filename in filenames_w:
-                if filename.endswith('.py'):
-                    filenames.append(path.join(rootpath, filename))
+            filenames.extend(
+                path.join(rootpath, filename)
+                for filename in filenames_w
+                if filename.endswith('.py')
+            )
 
     if not dev_mode:
         # NOTE: We could just give pylint the directories and it would find the files on its

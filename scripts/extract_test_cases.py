@@ -22,7 +22,7 @@ def extract_test_cases(_path):
 
     for l in lines:
         if inside:
-            if l.strip().endswith(')' + delimiter + '";'):
+            if l.strip().endswith(f'){delimiter}' + '";'):
                 with open(f'{ctr:03d}_{test_name}.sol', mode='wb', encoding='utf8') as f:
                     f.write(test)
                 ctr += 1
@@ -33,11 +33,9 @@ def extract_test_cases(_path):
                 l = l.replace('\t', '        ')
                 test += l + '\n'
         else:
-            m = re.search(r'BOOST_AUTO_TEST_CASE\(([^(]*)\)', l.strip())
-            if m:
+            if m := re.search(r'BOOST_AUTO_TEST_CASE\(([^(]*)\)', l.strip()):
                 test_name = m.group(1)
-            m = re.search(r'R"([^(]*)\($', l.strip())
-            if m:
+            if m := re.search(r'R"([^(]*)\($', l.strip()):
                 inside = True
                 delimiter = m.group(1)
 
